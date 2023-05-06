@@ -5,7 +5,9 @@ import (
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 )
 
+// NewsAdapter interacts with external news services
 type NewsAdapter interface {
+	// GetMainArticle finds the main article, the concept of the main article will be adapter specific.
 	GetMainArticle(ctx context.Context) (domain.NewsArticle, error)
 }
 
@@ -18,11 +20,5 @@ type ImageGenerationAdapter interface {
 }
 
 type SocialMediaAdapter interface {
-	PublishImagePost(ctx context.Context, localImage domain.ImagePath, imagePrompt domain.ImagePrompt) error
-}
-
-type Logger interface {
-	Debug(ctx context.Context, msg string, keysAndValues ...interface{})
-	Info(ctx context.Context, msg string, keysAndValues ...interface{})
-	Error(ctx context.Context, msg string, keysAndValues ...interface{})
+	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt domain.ImagePrompt) error
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/BaronBonet/content-generator/internal/core/ports"
 )
 
-type NewsContentService struct {
+type service struct {
 	logger                ports.Logger
 	newsAdapter           ports.NewsAdapter
 	promptCreationAdapter ports.PromptCreationAdapter
@@ -13,7 +13,7 @@ type NewsContentService struct {
 	socialMediaAdapter    ports.SocialMediaAdapter
 }
 
-func (srv *NewsContentService) GenerateNewsContent(ctx context.Context) error {
+func (srv *service) GenerateNewsContent(ctx context.Context) error {
 	article, err := srv.newsAdapter.GetMainArticle(ctx)
 	if err != nil {
 		srv.logger.Error(ctx, "Error when getting article", "error", err)
@@ -34,11 +34,12 @@ func (srv *NewsContentService) GenerateNewsContent(ctx context.Context) error {
 		srv.logger.Error(ctx, "Error when posting image", "error", err)
 		return err
 	}
+
 	return nil
 }
 
-func NewNewsContentService(logger ports.Logger, externalNewsRepo ports.NewsAdapter, imagePrompterRepo ports.PromptCreationAdapter, imageGenerationRepo ports.ImageGenerationAdapter, postingRepo ports.SocialMediaAdapter) *NewsContentService {
-	return &NewsContentService{
+func NewNewsContentService(logger ports.Logger, externalNewsRepo ports.NewsAdapter, imagePrompterRepo ports.PromptCreationAdapter, imageGenerationRepo ports.ImageGenerationAdapter, postingRepo ports.SocialMediaAdapter) ports.Service {
+	return &service{
 		logger:                logger,
 		newsAdapter:           externalNewsRepo,
 		promptCreationAdapter: imagePrompterRepo,
