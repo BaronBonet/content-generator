@@ -38,7 +38,13 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 	return nil
 }
 
-func NewNewsContentService(logger ports.Logger, externalNewsRepo ports.NewsAdapter, imagePrompterRepo ports.PromptCreationAdapter, imageGenerationRepo ports.ImageGenerationAdapter, postingRepo ports.SocialMediaAdapter) ports.Service {
+func NewNewsContentService(
+	logger ports.Logger,
+	externalNewsRepo ports.NewsAdapter,
+	imagePrompterRepo ports.PromptCreationAdapter,
+	imageGenerationRepo ports.ImageGenerationAdapter,
+	postingRepo ports.SocialMediaAdapter,
+) ports.Service {
 	return &service{
 		logger:                logger,
 		newsAdapter:           externalNewsRepo,

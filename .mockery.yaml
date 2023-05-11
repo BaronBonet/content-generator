@@ -1,0 +1,6 @@
+inpackage: True
+testonly: False
+with-expecter: True
+keeptree: False
+case: underscore
+log-level: warn
