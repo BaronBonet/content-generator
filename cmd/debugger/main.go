@@ -32,11 +32,15 @@ func main() {
 		return
 	}
 	prompt, err := getPrompt(chatGPTAdapter, mainArticle)
+	// Prompt: A cartoon depiction of the Group of 7 leaders playing a game of ‘Russian Roulette’ with oil barrels, with Russia anxiously looking on in the background.
 	println(prompt)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
+	dalleAdapter := adapters.NewDalleAdapter(chatKey, http.DefaultClient)
+	imagePath, err := dalleAdapter.GenerateImage(context.Background(), prompt)
+	println(imagePath)
 }
 
 func getPrompt(adapter ports.LLMAdapter, article domain.NewsArticle) (domain.ImagePrompt, error) {

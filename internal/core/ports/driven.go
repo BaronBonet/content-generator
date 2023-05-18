@@ -21,8 +21,11 @@ type LLMAdapter interface {
 	CreateImagePrompt(ctx context.Context, article domain.NewsArticle) (domain.ImagePrompt, error)
 }
 
+// ImageGenerationAdapter is responsible for connecting to image generation models like DALL-E, Midjourney or Stable Diffusion
+//
 //go:generate mockery --name=ImageGenerationAdapter
 type ImageGenerationAdapter interface {
+	// GenerateImage generates an image from a prompt
 	GenerateImage(ctx context.Context, prompt domain.ImagePrompt) (domain.ImagePath, error)
 }
 
