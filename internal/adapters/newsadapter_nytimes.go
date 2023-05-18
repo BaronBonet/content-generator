@@ -76,6 +76,7 @@ func (n *nyTimesAdapter) GetMainArticle(ctx context.Context) (domain.NewsArticle
 			Month: date.Month(),
 			Year:  date.Year(),
 		},
+		Url: mainArticle.Url,
 	}, nil
 }
 
@@ -87,4 +88,5 @@ type NYTArticle struct {
 	Title         string `json:"title"`
 	Abstract      string `json:"abstract"`
 	PublishedDate string `json:"published_date"`
+	Url           string `json:"url"`
 }

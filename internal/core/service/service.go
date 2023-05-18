@@ -29,7 +29,7 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 		srv.logger.Error(ctx, "Error when generating image", "error", err)
 		return err
 	}
-	err = srv.socialMediaAdapter.PublishImagePost(ctx, localImage, imagePrompt)
+	err = srv.socialMediaAdapter.PublishImagePost(ctx, localImage, imagePrompt, article.Url)
 	if err != nil {
 		srv.logger.Error(ctx, "Error when posting image", "error", err)
 		return err

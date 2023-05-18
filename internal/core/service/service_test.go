@@ -37,7 +37,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
-				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -74,7 +74,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
-				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
+				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			},
 			expectedError: errors.New("social media error"),

@@ -29,7 +29,10 @@ type ImageGenerationAdapter interface {
 	GenerateImage(ctx context.Context, prompt domain.ImagePrompt) (domain.ImagePath, error)
 }
 
+// SocialMediaAdapter is responsible for connecting to social media services like Twitter
+//
 //go:generate mockery --name=SocialMediaAdapter
 type SocialMediaAdapter interface {
-	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt domain.ImagePrompt) error
+	// PublishImagePost publishes an image post to a social media service
+	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt domain.ImagePrompt, sourceUrl string) error
 }

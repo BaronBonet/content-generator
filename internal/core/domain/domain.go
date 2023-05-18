@@ -6,6 +6,7 @@ type NewsArticle struct {
 	Title string
 	Body  string
 	Date  Date
+	Url   string
 }
 
 type Date struct {

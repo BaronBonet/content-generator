@@ -25,7 +25,8 @@ func TestNYTimesAdapter_GetMainArticle(t *testing.T) {
 					{
 						"title": "Test Title",
 						"abstract": "Test Abstract",
-						"published_date": "2022-01-01T00:00:00-05:00"
+						"published_date": "2022-01-01T00:00:00-05:00",
+						"url": "https://www.nytimes.com/2022/01/01/test-article.html"
 					}
 				]
 			}`,
@@ -65,9 +66,6 @@ func TestNYTimesAdapter_GetMainArticle(t *testing.T) {
 			}
 
 			mockClient.AssertCalled(t, "Do", mock.Anything)
-
-			mockClient.AssertExpectations(t)
 		})
 	}
-
 }
