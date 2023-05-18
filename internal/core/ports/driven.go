@@ -13,8 +13,11 @@ type NewsAdapter interface {
 	GetMainArticle(ctx context.Context) (domain.NewsArticle, error)
 }
 
-//go:generate mockery --name=PromptCreationAdapter
-type PromptCreationAdapter interface {
+// LLMAdapter is responsible for connecting to large language models like ChatGPT
+//
+//go:generate mockery --name=LLMAdapter
+type LLMAdapter interface {
+	// CreateImagePrompt creates a prompt that an AI image generator can use
 	CreateImagePrompt(ctx context.Context, article domain.NewsArticle) (domain.ImagePrompt, error)
 }
 

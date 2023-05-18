@@ -3,6 +3,7 @@ package adapters
 import (
 	"context"
 	"errors"
+	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/stretchr/testify/mock"
 	"io/ioutil"
 	"net/http"
@@ -10,8 +11,7 @@ import (
 	"testing"
 )
 
-// TestNYTimesAdapter_GetMainArticle tests the GetMainArticle method of the New York Times adapter.
-func TestNYTimesAdapter_GetMainArticle(t *testing.T) {
+func TestChatGPTAdapter_CreateImagePrompt(t *testing.T) {
 	testCases := []struct {
 		name          string
 		responseBody  string
@@ -21,11 +21,12 @@ func TestNYTimesAdapter_GetMainArticle(t *testing.T) {
 		{
 			name: "Success",
 			responseBody: `{
-				"results": [
+				"choices": [
 					{
-						"title": "Test Title",
-						"abstract": "Test Abstract",
-						"published_date": "2022-01-01T00:00:00-05:00"
+						"message": {
+							"role": "assistant",
+							"content": "Test Prompt"
+						}
 					}
 				]
 			}`,
@@ -36,38 +37,33 @@ func TestNYTimesAdapter_GetMainArticle(t *testing.T) {
 			name:          "API Error",
 			responseBody:  "",
 			responseCode:  http.StatusInternalServerError,
-			expectedError: errors.New("failed to fetch data from New York Times API"),
+			expectedError: errors.New("failed to generate image prompt, status code: 500"),
 		},
 		{
-			name:          "Empty Results",
-			responseBody:  `{"results": []}`,
+			name:          "Empty Choices",
+			responseBody:  `{"choices": []}`,
 			responseCode:  http.StatusOK,
-			expectedError: errors.New("no articles found"),
+			expectedError: errors.New("no choices returned from ChatGPT API"),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockClient := newMockHttpClient(t)
 
+			mockClient := newMockHttpClient(t)
 			mockClient.On("Do", mock.Anything).Return(&http.Response{
 				StatusCode: tc.responseCode,
 				Body:       ioutil.NopCloser(strings.NewReader(tc.responseBody)),
 			}, nil)
 
-			adapter := NewNYTimesNewsAdapter("test-api-key", mockClient)
+			adapter := NewChatGPTAdapter("test-api-key", mockClient)
 
-			_, err := adapter.GetMainArticle(context.Background())
+			_, err := adapter.CreateImagePrompt(context.Background(), domain.NewsArticle{Title: "test", Body: "test"})
 			if (err != nil && tc.expectedError == nil) ||
 				(err == nil && tc.expectedError != nil) ||
 				(err != nil && tc.expectedError != nil && err.Error() != tc.expectedError.Error()) {
 				t.Errorf("Expected error: %v, got: %v", tc.expectedError, err)
 			}
-
-			mockClient.AssertCalled(t, "Do", mock.Anything)
-
-			mockClient.AssertExpectations(t)
 		})
 	}
-
 }

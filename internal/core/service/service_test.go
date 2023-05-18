@@ -22,7 +22,7 @@ func tearDownAdapters(adapters ...*mock.Mock) {
 func TestService_GenerateNewsContent(t *testing.T) {
 	mockLogger := ports.NewMockLogger(t)
 	mockNewsAdapter := ports.NewMockNewsAdapter(t)
-	mockPromptCreationAdapter := ports.NewMockPromptCreationAdapter(t)
+	llmAdapter := ports.NewMockLLMAdapter(t)
 	mockImageGenerationAdapter := ports.NewMockImageGenerationAdapter(t)
 	mockSocialMediaAdapter := ports.NewMockSocialMediaAdapter(t)
 
@@ -35,7 +35,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "Success",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				mockPromptCreationAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
+				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
 				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -50,10 +50,10 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			expectedError: errors.New("news error"),
 		},
 		{
-			name: "PromptCreationAdapterError",
+			name: "LLMAdapterError",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				mockPromptCreationAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt(""), errors.New("prompt error"))
+				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt(""), errors.New("prompt error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			},
 			expectedError: errors.New("prompt error"),
@@ -62,7 +62,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "ImageGenerationAdapterError",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				mockPromptCreationAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
+				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath(""), errors.New("generation error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			},
@@ -72,7 +72,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "SocialMediaAdapterError",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				mockPromptCreationAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
+				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
 				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
@@ -88,7 +88,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			srv := NewNewsContentService(
 				mockLogger,
 				mockNewsAdapter,
-				mockPromptCreationAdapter,
+				llmAdapter,
 				mockImageGenerationAdapter,
 				mockSocialMediaAdapter,
 			)
@@ -98,7 +98,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			assert.Equal(t, tc.expectedError, err)
 
 			tearDownAdapters(&mockNewsAdapter.Mock,
-				&mockPromptCreationAdapter.Mock,
+				&llmAdapter.Mock,
 				&mockImageGenerationAdapter.Mock,
 				&mockSocialMediaAdapter.Mock,
 				&mockLogger.Mock)

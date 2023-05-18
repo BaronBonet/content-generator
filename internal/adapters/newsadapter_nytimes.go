@@ -22,17 +22,11 @@ type nyTimesAdapter struct {
 	client httpClient
 }
 
-// Add the following line to your nyTimesAdapter struct definition:
-// client httpClient
-type httpClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
 // Modify your NewNYTimesNewsAdapter function to set the default client:
-func NewNYTimesNewsAdapter(apiKey string) ports.NewsAdapter {
+func NewNYTimesNewsAdapter(apiKey string, httpClient httpClient) ports.NewsAdapter {
 	return &nyTimesAdapter{
 		apiKey: apiKey,
-		client: http.DefaultClient,
+		client: httpClient,
 	}
 }
 

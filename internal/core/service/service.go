@@ -6,11 +6,11 @@ import (
 )
 
 type service struct {
-	logger                ports.Logger
-	newsAdapter           ports.NewsAdapter
-	promptCreationAdapter ports.PromptCreationAdapter
-	generationAdapter     ports.ImageGenerationAdapter
-	socialMediaAdapter    ports.SocialMediaAdapter
+	logger             ports.Logger
+	newsAdapter        ports.NewsAdapter
+	llmAdapter         ports.LLMAdapter
+	generationAdapter  ports.ImageGenerationAdapter
+	socialMediaAdapter ports.SocialMediaAdapter
 }
 
 func (srv *service) GenerateNewsContent(ctx context.Context) error {
@@ -19,7 +19,7 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 		srv.logger.Error(ctx, "Error when getting article", "error", err)
 		return err
 	}
-	imagePrompt, err := srv.promptCreationAdapter.CreateImagePrompt(ctx, article)
+	imagePrompt, err := srv.llmAdapter.CreateImagePrompt(ctx, article)
 	if err != nil {
 		srv.logger.Error(ctx, "Error when creating image prompt", "error", err)
 		return err
@@ -40,16 +40,16 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 
 func NewNewsContentService(
 	logger ports.Logger,
-	externalNewsRepo ports.NewsAdapter,
-	imagePrompterRepo ports.PromptCreationAdapter,
-	imageGenerationRepo ports.ImageGenerationAdapter,
+	externalNewsAdapter ports.NewsAdapter,
+	llmAdapter ports.LLMAdapter,
+	imageGenerationAdapter ports.ImageGenerationAdapter,
 	postingRepo ports.SocialMediaAdapter,
 ) ports.Service {
 	return &service{
-		logger:                logger,
-		newsAdapter:           externalNewsRepo,
-		promptCreationAdapter: imagePrompterRepo,
-		generationAdapter:     imageGenerationRepo,
-		socialMediaAdapter:    postingRepo,
+		logger:             logger,
+		newsAdapter:        externalNewsAdapter,
+		llmAdapter:         llmAdapter,
+		generationAdapter:  imageGenerationAdapter,
+		socialMediaAdapter: postingRepo,
 	}
 }
