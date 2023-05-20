@@ -22,7 +22,6 @@ type nyTimesAdapter struct {
 	client httpClient
 }
 
-// Modify your NewNYTimesNewsAdapter function to set the default client:
 func NewNYTimesNewsAdapter(apiKey string, httpClient httpClient) ports.NewsAdapter {
 	return &nyTimesAdapter{
 		apiKey: apiKey,
@@ -44,7 +43,7 @@ func (n *nyTimesAdapter) GetMainArticle(ctx context.Context) (domain.NewsArticle
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return domain.NewsArticle{}, errors.New("failed to fetch data from New York Times API")
+		return domain.NewsArticle{}, fmt.Errorf("failed to fetch data from New York Times API, status code: %d", resp.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)

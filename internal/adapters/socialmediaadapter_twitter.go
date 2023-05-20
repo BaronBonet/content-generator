@@ -8,18 +8,22 @@ import (
 	"fmt"
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
+	"github.com/dghubble/oauth1"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"os"
 )
 
 type twitterAdapter struct {
-	httpClient httpClient
+	httpOAuthClient httpClient
+	httpClient      httpClient
 }
 
-func NewTwitterAdapter(httpClient httpClient) ports.SocialMediaAdapter {
+func NewTwitterSocialMediaAdapter(httpOAuthClient httpClient, httpClient httpClient) ports.SocialMediaAdapter {
 	return &twitterAdapter{
-		httpClient: httpClient,
+		httpOAuthClient: httpOAuthClient,
+		httpClient:      httpClient,
 	}
 }
 
@@ -55,7 +59,7 @@ func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID str
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := t.httpClient.Do(req)
+	resp, err := t.httpOAuthClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}
@@ -72,7 +76,6 @@ func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID str
 }
 
 func (t *twitterAdapter) uploadImage(ctx context.Context, imageURL string) (string, error) {
-	// Download the image
 	resp, err := t.httpClient.Get(imageURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to download image: %w", err)
@@ -106,7 +109,7 @@ func (t *twitterAdapter) uploadImage(ctx context.Context, imageURL string) (stri
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
-	res, err := t.httpClient.Do(req)
+	res, err := t.httpOAuthClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -130,4 +133,23 @@ func (t *twitterAdapter) uploadImage(ctx context.Context, imageURL string) (stri
 		return "", err
 	}
 	return data.MediaIDString, nil
+}
+
+// NewTwitterAdapterFromEnv is a helper function to create a TwitterAdapter from environment variables
+func NewTwitterAdapterFromEnv() (ports.SocialMediaAdapter, error) {
+	keys := []string{"TWITTER_API_KEY", "TWITTER_API_KEY_SECRET", "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_TOKEN_SECRET"}
+
+	values := make(map[string]string, len(keys))
+	for _, key := range keys {
+		value, exists := os.LookupEnv(key)
+		if !exists {
+			return nil, fmt.Errorf("environment variable %s not set", key)
+		}
+		values[key] = value
+	}
+
+	config := oauth1.NewConfig(values["TWITTER_API_KEY"], values["TWITTER_API_KEY_SECRET"])
+	token := oauth1.NewToken(values["TWITTER_ACCESS_TOKEN"], values["TWITTER_ACCESS_TOKEN_SECRET"])
+
+	return NewTwitterSocialMediaAdapter(config.Client(oauth1.NoContext, token), http.DefaultClient), nil
 }

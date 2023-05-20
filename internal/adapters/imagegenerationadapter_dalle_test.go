@@ -19,7 +19,7 @@ func TestDalleAdapter_GenerateImage(t *testing.T) {
 	}{
 		{
 			name:             "Success",
-			mockResponse:     `{"id":[{"url":"http://example.com/image1.png"}]}`,
+			mockResponse:     `{"data":[{"url":"http://example.com/image1.png"}]}`,
 			mockResponseCode: http.StatusOK,
 			expectedError:    "",
 		},
@@ -27,13 +27,13 @@ func TestDalleAdapter_GenerateImage(t *testing.T) {
 			name:             "API Error",
 			mockResponse:     `{"error":"API Error"}`,
 			mockResponseCode: http.StatusInternalServerError,
-			expectedError:    "failed to generate image, status code: 500",
+			expectedError:    "failed to generate image, status code: 500, body: {\"error\":\"API Error\"}",
 		},
 		{
 			name:             "Empty Choices",
 			mockResponse:     `{"id":[]}`,
 			mockResponseCode: http.StatusOK,
-			expectedError:    "no choices returned from ChatGPT API",
+			expectedError:    "no choices returned from Dalle API",
 		},
 	}
 
@@ -46,7 +46,7 @@ func TestDalleAdapter_GenerateImage(t *testing.T) {
 				Body:       ioutil.NopCloser(strings.NewReader(tc.mockResponse)),
 			}, nil)
 
-			dalleAdapter := NewDalleAdapter("test-api-key", mockClient)
+			dalleAdapter := NewDalleImageGenerationAdapter("test-api-key", mockClient)
 
 			_, err := dalleAdapter.GenerateImage(context.Background(), "test-prompt")
 

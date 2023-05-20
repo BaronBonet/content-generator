@@ -1,12 +1,9 @@
 package ports
 
-import (
-	"context"
-)
-
 //go:generate mockery --name=Logger
 type Logger interface {
-	Debug(ctx context.Context, msg string, keysAndValues ...interface{})
-	Info(ctx context.Context, msg string, keysAndValues ...interface{})
-	Error(ctx context.Context, msg string, keysAndValues ...interface{})
+	Debug(msg string, keysAndValues ...interface{})
+	Info(msg string, keysAndValues ...interface{})
+	Error(msg string, keysAndValues ...interface{})
+	Fatal(msg string, keysAndValues ...interface{})
 }

@@ -10,7 +10,6 @@ import (
 	"testing"
 )
 
-// TestTwitterAdapter_PublishImagePost tests the PublishImagePost method of the Twitter adapter.
 func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 	testCases := []struct {
 		name            string
@@ -52,6 +51,7 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			mockOAuthClient := newMockHttpClient(t)
 			mockClient := newMockHttpClient(t)
 
 			mockClient.On("Get", "https://test.com/test.png").Return(&http.Response{
@@ -59,19 +59,19 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 				Body:       ioutil.NopCloser(strings.NewReader("test image")),
 			}, nil).Once()
 
-			mockClient.On("Do", mock.Anything).Return(&http.Response{
+			mockOAuthClient.On("Do", mock.Anything).Return(&http.Response{
 				StatusCode: tc.imageUploadCode,
 				Body:       ioutil.NopCloser(strings.NewReader(tc.imageUploadResp)),
 			}, nil).Once()
 
 			if tc.imageUploadCode == http.StatusOK {
-				mockClient.On("Do", mock.Anything).Return(&http.Response{
+				mockOAuthClient.On("Do", mock.Anything).Return(&http.Response{
 					StatusCode: tc.tweetCode,
 					Body:       ioutil.NopCloser(strings.NewReader(tc.tweetResp)),
 				}, nil).Once()
 			}
 
-			adapter := NewTwitterAdapter(mockClient)
+			adapter := NewTwitterSocialMediaAdapter(mockOAuthClient, mockClient)
 
 			err := adapter.PublishImagePost(context.Background(), "https://test.com/test.png", "example prompt", "https://example.com")
 			if (err != nil && tc.expectedError == nil) ||
@@ -79,8 +79,6 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 				(err != nil && tc.expectedError != nil && err.Error() != tc.expectedError.Error()) {
 				t.Errorf("Expected error: %v, got: %v", tc.expectedError, err)
 			}
-
-			mockClient.AssertExpectations(t)
 		})
 	}
 }

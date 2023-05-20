@@ -37,7 +37,7 @@ func TestNYTimesAdapter_GetMainArticle(t *testing.T) {
 			name:          "API Error",
 			responseBody:  "",
 			responseCode:  http.StatusInternalServerError,
-			expectedError: errors.New("failed to fetch data from New York Times API"),
+			expectedError: errors.New("failed to fetch data from New York Times API, status code: 500"),
 		},
 		{
 			name:          "Empty Results",

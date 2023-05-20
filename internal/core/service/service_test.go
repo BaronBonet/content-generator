@@ -34,6 +34,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 		{
 			name: "Success",
 			setupMocks: func() {
+				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
@@ -54,7 +55,8 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt(""), errors.New("prompt error"))
-				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
 			expectedError: errors.New("prompt error"),
 		},
@@ -64,7 +66,8 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath(""), errors.New("generation error"))
-				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
 			expectedError: errors.New("generation error"),
 		},
@@ -75,7 +78,8 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
 				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
-				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
 			expectedError: errors.New("social media error"),
 		},

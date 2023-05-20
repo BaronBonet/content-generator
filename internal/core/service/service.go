@@ -16,25 +16,27 @@ type service struct {
 func (srv *service) GenerateNewsContent(ctx context.Context) error {
 	article, err := srv.newsAdapter.GetMainArticle(ctx)
 	if err != nil {
-		srv.logger.Error(ctx, "Error when getting article", "error", err)
+		srv.logger.Error("Error when getting article", "error", err)
 		return err
 	}
+	srv.logger.Debug("Got article", "article", article)
 	imagePrompt, err := srv.llmAdapter.CreateImagePrompt(ctx, article)
 	if err != nil {
-		srv.logger.Error(ctx, "Error when creating image prompt", "error", err)
+		srv.logger.Error("Error when creating image prompt", "error", err)
 		return err
 	}
-	localImage, err := srv.generationAdapter.GenerateImage(ctx, imagePrompt)
+	srv.logger.Debug("Got image prompt", "imagePrompt", imagePrompt)
+	image, err := srv.generationAdapter.GenerateImage(ctx, imagePrompt)
 	if err != nil {
-		srv.logger.Error(ctx, "Error when generating image", "error", err)
+		srv.logger.Error("Error when generating image", "error", err)
 		return err
 	}
-	err = srv.socialMediaAdapter.PublishImagePost(ctx, localImage, imagePrompt, article.Url)
+	err = srv.socialMediaAdapter.PublishImagePost(ctx, image, imagePrompt, article.Url)
 	if err != nil {
-		srv.logger.Error(ctx, "Error when posting image", "error", err)
+		srv.logger.Error("Error when posting image", "error", err)
 		return err
 	}
-
+	srv.logger.Debug("Published image")
 	return nil
 }
 

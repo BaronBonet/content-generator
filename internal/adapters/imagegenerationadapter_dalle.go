@@ -18,7 +18,7 @@ type dalleAdapter struct {
 	client httpClient
 }
 
-func NewDalleAdapter(apiKey string, httpClient httpClient) ports.ImageGenerationAdapter {
+func NewDalleImageGenerationAdapter(apiKey string, httpClient httpClient) ports.ImageGenerationAdapter {
 	return &dalleAdapter{
 		apiKey: apiKey,
 		client: httpClient,
@@ -49,13 +49,13 @@ func (d *dalleAdapter) GenerateImage(ctx context.Context, prompt domain.ImagePro
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to generate image, status code: %d", resp.StatusCode)
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to generate image, status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	response := dalleApiResponse{}
@@ -67,14 +67,12 @@ func (d *dalleAdapter) GenerateImage(ctx context.Context, prompt domain.ImagePro
 	if len(response.Choices) > 0 {
 		return domain.ImagePath(response.Choices[0].Url), nil
 	} else {
-		return "", fmt.Errorf("no choices returned from ChatGPT API")
+		return "", fmt.Errorf("no choices returned from Dalle API")
 	}
 }
 
-type dalleData struct {
-	Url string `json:"url"`
-}
-
 type dalleApiResponse struct {
-	Choices []dalleData `json:"id"`
+	Choices []struct {
+		Url string `json:"url"`
+	} `json:"data"`
 }
