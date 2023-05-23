@@ -34,7 +34,7 @@ func NewTwitterSocialMediaAdapter(httpOAuthClient httpClient, httpClient httpCli
 	}
 }
 
-func (t *twitterAdapter) PublishImagePost(ctx context.Context, image domain.ImagePath, prompt domain.ImagePrompt, sourceUrl string) error {
+func (t *twitterAdapter) PublishImagePost(ctx context.Context, image domain.ImagePath, prompt string, sourceUrl string) error {
 	mediaID, err := t.uploadImage(ctx, string(image))
 	if err != nil {
 		return err

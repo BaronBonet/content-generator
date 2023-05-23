@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
 	"github.com/urfave/cli/v2"
 	"sort"
@@ -15,21 +16,51 @@ func NewCLIHandler(ctx context.Context, service ports.Service) *CliHandler {
 	app := &cli.App{
 		Name:                 "Generate News Content",
 		EnableBashCompletion: true,
-		Usage:                "Run the full content generation process",
+		Usage:                "Cli tool for generating news content",
 		Commands: []*cli.Command{
 			{
 				Name:  "generateNewsContent",
-				Usage: "List all raw maps",
-				Flags: []cli.Flag{
-					&cli.BoolFlag{
-						Name: "json",
-					},
-				},
+				Usage: "Run the news content generation process",
 				Action: func(c *cli.Context) error {
 					err := service.GenerateNewsContent(ctx)
 					if err != nil {
 						return err
 					}
+					return nil
+				},
+			},
+			{
+				Name:  "createPrompt",
+				Usage: "Create a prompt",
+				Action: func(c *cli.Context) error {
+					prompt := c.Args().Get(0)
+					if prompt == "" {
+						return nil
+					}
+
+					prompt, err := service.CreatePrompt(ctx, prompt)
+					if err != nil {
+						return err
+					}
+					fmt.Println(prompt)
+					return nil
+				},
+			},
+			{
+				Name:  "generateImage",
+				Usage: "Create an image and get the url to the image",
+				Action: func(c *cli.Context) error {
+					prompt := c.Args().Get(0)
+					if prompt == "" {
+						return nil
+					}
+					url, err := service.GenerateImage(ctx, prompt)
+					if err != nil {
+						return err
+					}
+					fmt.Println("Image generated at:")
+					fmt.Println(url)
+					fmt.Println("")
 					return nil
 				},
 			},

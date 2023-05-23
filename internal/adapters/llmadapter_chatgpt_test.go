@@ -3,7 +3,6 @@ package adapters
 import (
 	"context"
 	"errors"
-	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/stretchr/testify/mock"
 	"io/ioutil"
 	"net/http"
@@ -58,7 +57,7 @@ func TestChatGPTAdapter_CreateImagePrompt(t *testing.T) {
 
 			adapter := NewChatGPTAdapter("test-api-key", mockClient)
 
-			_, err := adapter.CreateImagePrompt(context.Background(), domain.NewsArticle{Title: "test", Body: "test"})
+			_, err := adapter.Chat(context.Background(), "Test prompt")
 			if (err != nil && tc.expectedError == nil) ||
 				(err == nil && tc.expectedError != nil) ||
 				(err != nil && tc.expectedError != nil && err.Error() != tc.expectedError.Error()) {

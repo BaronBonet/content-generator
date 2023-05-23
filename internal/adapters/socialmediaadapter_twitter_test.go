@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/stretchr/testify/mock"
 	"io/ioutil"
 	"net/http"
@@ -101,7 +100,7 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 
 			adapter := NewTwitterSocialMediaAdapter(mockOAuthClient, mockClient)
 
-			err := adapter.PublishImagePost(context.Background(), "https://test.com/test.png", domain.ImagePrompt(tc.prompt), "https://example.com")
+			err := adapter.PublishImagePost(context.Background(), "https://test.com/test.png", tc.prompt, "https://example.com")
 
 			if (err != nil && tc.expectedError == nil) ||
 				(err == nil && tc.expectedError != nil) ||

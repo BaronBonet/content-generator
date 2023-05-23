@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
 )
 
@@ -20,7 +22,15 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 		return err
 	}
 	srv.logger.Debug("Got article", "article", article)
-	imagePrompt, err := srv.llmAdapter.CreateImagePrompt(ctx, article)
+
+	prompt := fmt.Sprintf("Generate a single sentence image prompt based on the following news title and body:"+
+		"\nTitle: %s"+
+		"\nBody: %s"+
+		"\n\nExamples of good prompts"+
+		"\n- 3D render of a pink balloon dog in a violet room"+
+		"\n- Illustration of a happy cat sitting on a couch in a living room with a coffee mug in its hand", article.Title, article.Body)
+
+	imagePrompt, err := srv.llmAdapter.Chat(ctx, prompt)
 	if err != nil {
 		srv.logger.Error("Error when creating image prompt", "error", err)
 		return err
@@ -39,6 +49,14 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 	}
 	srv.logger.Debug("Published image")
 	return nil
+}
+
+func (srv *service) CreatePrompt(ctx context.Context, prompt string) (string, error) {
+	return srv.llmAdapter.Chat(ctx, prompt)
+}
+
+func (srv *service) GenerateImage(ctx context.Context, prompt string) (domain.ImagePath, error) {
+	return srv.generationAdapter.GenerateImage(ctx, prompt)
 }
 
 func NewNewsContentService(

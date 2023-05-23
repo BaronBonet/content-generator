@@ -35,8 +35,8 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "Success",
 			setupMocks: func() {
 				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
-				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
+				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article", Body: "Test body"}, nil)
+				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("Test Image Prompt", nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
 				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -54,7 +54,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "LLMAdapterError",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt(""), errors.New("prompt error"))
+				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("", errors.New("prompt error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
@@ -64,7 +64,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "ImageGenerationAdapterError",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
+				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("Test Image Prompt", nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath(""), errors.New("generation error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
@@ -75,7 +75,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "SocialMediaAdapterError",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
-				llmAdapter.On("CreateImagePrompt", mock.Anything, mock.Anything).Return(domain.ImagePrompt("Test Image Prompt"), nil)
+				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("Test Image Prompt", nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
 				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)

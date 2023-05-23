@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
 	"io/ioutil"
 	"net/http"
@@ -25,8 +24,7 @@ func NewChatGPTAdapter(apiKey string, httpClient httpClient) ports.LLMAdapter {
 	}
 }
 
-func (c *chatGPTAdapter) CreateImagePrompt(ctx context.Context, article domain.NewsArticle) (domain.ImagePrompt, error) {
-	prompt := fmt.Sprintf("Pretend you are a cartoonist generating creative images for Dalle. Dalle is an app that can generate AI art from simple prompts. What I will give you is a news headline and body, and I want you to create a creative prompt so Dalle will make a funny image about the news: HEADLINE - %s, BODY: %s", article.Title, article.Body)
+func (c *chatGPTAdapter) Chat(ctx context.Context, prompt string) (string, error) {
 
 	requestBody := map[string]interface{}{
 		"model":       "gpt-3.5-turbo",
@@ -79,7 +77,7 @@ func (c *chatGPTAdapter) CreateImagePrompt(ctx context.Context, article domain.N
 	}
 
 	if len(apiResponse.Choices) > 0 {
-		return domain.ImagePrompt(apiResponse.Choices[0].Message.Content), nil
+		return apiResponse.Choices[0].Message.Content, nil
 	} else {
 		return "", fmt.Errorf("no choices returned from ChatGPT API")
 	}

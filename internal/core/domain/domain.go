@@ -15,6 +15,4 @@ type Date struct {
 	Year  int
 }
 
-type ImagePrompt string
-
 type ImagePath string

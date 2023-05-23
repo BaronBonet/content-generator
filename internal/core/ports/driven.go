@@ -17,8 +17,8 @@ type NewsAdapter interface {
 //
 //go:generate mockery --name=LLMAdapter
 type LLMAdapter interface {
-	// CreateImagePrompt creates a prompt that an AI image generator can use
-	CreateImagePrompt(ctx context.Context, article domain.NewsArticle) (domain.ImagePrompt, error)
+	// Chat has a conversation with a large language model
+	Chat(ctx context.Context, prompt string) (string, error)
 }
 
 // ImageGenerationAdapter is responsible for connecting to image generation models like DALL-E, Midjourney or Stable Diffusion
@@ -26,7 +26,7 @@ type LLMAdapter interface {
 //go:generate mockery --name=ImageGenerationAdapter
 type ImageGenerationAdapter interface {
 	// GenerateImage generates an image from a prompt
-	GenerateImage(ctx context.Context, prompt domain.ImagePrompt) (domain.ImagePath, error)
+	GenerateImage(ctx context.Context, prompt string) (domain.ImagePath, error)
 }
 
 // SocialMediaAdapter is responsible for connecting to social media services like Twitter
@@ -34,5 +34,5 @@ type ImageGenerationAdapter interface {
 //go:generate mockery --name=SocialMediaAdapter
 type SocialMediaAdapter interface {
 	// PublishImagePost publishes an image post to a social media service
-	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt domain.ImagePrompt, sourceUrl string) error
+	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt string, sourceUrl string) error
 }
