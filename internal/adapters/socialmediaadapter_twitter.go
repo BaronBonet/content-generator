@@ -20,6 +20,13 @@ type twitterAdapter struct {
 	httpClient      httpClient
 }
 
+type tweet struct {
+	Text        string `json:"text"`
+	Attachments struct {
+		MediaIDs []string `json:"media_ids"`
+	} `json:"media"`
+}
+
 func NewTwitterSocialMediaAdapter(httpOAuthClient httpClient, httpClient httpClient) ports.SocialMediaAdapter {
 	return &twitterAdapter{
 		httpOAuthClient: httpOAuthClient,
@@ -38,15 +45,9 @@ func (t *twitterAdapter) PublishImagePost(ctx context.Context, image domain.Imag
 
 func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID string) error {
 
-	tweetData := struct {
-		Text        string `json:"text"`
-		Attachments struct {
-			MediaIDs []string `json:"media_ids"`
-		} `json:"media"`
-	}{
+	tweetData := tweet{
 		Text: truncateString(tweetText),
 	}
-
 	tweetData.Attachments.MediaIDs = append(tweetData.Attachments.MediaIDs, mediaID)
 
 	jsonBytes, err := json.Marshal(tweetData)

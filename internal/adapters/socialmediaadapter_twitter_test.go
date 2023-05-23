@@ -1,8 +1,11 @@
 package adapters
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/stretchr/testify/mock"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +16,7 @@ import (
 func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 	testCases := []struct {
 		name            string
+		prompt          string
 		imageUploadResp string
 		tweetResp       string
 		imageUploadCode int
@@ -22,6 +26,7 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 	}{
 		{
 			name:            "Success",
+			prompt:          "example prompt",
 			imageUploadResp: `{"media_id_string": "12345"}`,
 			tweetResp:       "{}",
 			imageUploadCode: http.StatusOK,
@@ -31,6 +36,7 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 		},
 		{
 			name:            "Image Upload Error",
+			prompt:          "example prompt",
 			imageUploadResp: "failed to upload image",
 			tweetResp:       "",
 			imageUploadCode: http.StatusInternalServerError,
@@ -40,11 +46,22 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 		},
 		{
 			name:            "Tweet Post Error",
+			prompt:          "example prompt",
 			imageUploadResp: `{"media_id_string": "12345"}`,
 			tweetResp:       "",
 			imageUploadCode: http.StatusOK,
 			tweetCode:       http.StatusInternalServerError,
 			expectedError:   errors.New("failed to post tweet, status code: 500"),
+			httpDoCalls:     2,
+		},
+		{
+			name:            "Prompt Greater Than 280 Characters",
+			prompt:          strings.Repeat("A", 300), // 300 > 280
+			imageUploadResp: `{"media_id_string": "12345"}`,
+			tweetResp:       "{}",
+			imageUploadCode: http.StatusOK,
+			tweetCode:       http.StatusCreated,
+			expectedError:   nil,
 			httpDoCalls:     2,
 		},
 	}
@@ -65,7 +82,18 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 			}, nil).Once()
 
 			if tc.imageUploadCode == http.StatusOK {
-				mockOAuthClient.On("Do", mock.Anything).Return(&http.Response{
+				mockOAuthClient.On("Do", mock.MatchedBy(func(req *http.Request) bool {
+
+					reqBytes, _ := ioutil.ReadAll(req.Body)
+					req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBytes)) // Reconstruct req.Body as it has been read
+					t := tweet{}
+					err := json.Unmarshal(reqBytes, &t)
+					if err != nil {
+						return false
+					}
+					// Verify the length of the tweet text.
+					return len(t.Text) <= 280
+				})).Return(&http.Response{
 					StatusCode: tc.tweetCode,
 					Body:       ioutil.NopCloser(strings.NewReader(tc.tweetResp)),
 				}, nil).Once()
@@ -73,12 +101,15 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 
 			adapter := NewTwitterSocialMediaAdapter(mockOAuthClient, mockClient)
 
-			err := adapter.PublishImagePost(context.Background(), "https://test.com/test.png", "example prompt", "https://example.com")
+			err := adapter.PublishImagePost(context.Background(), "https://test.com/test.png", domain.ImagePrompt(tc.prompt), "https://example.com")
+
 			if (err != nil && tc.expectedError == nil) ||
 				(err == nil && tc.expectedError != nil) ||
 				(err != nil && tc.expectedError != nil && err.Error() != tc.expectedError.Error()) {
 				t.Errorf("Expected error: %v, got: %v", tc.expectedError, err)
 			}
+			mockOAuthClient.AssertNumberOfCalls(t, "Do", tc.httpDoCalls)
+
 		})
 	}
 }
