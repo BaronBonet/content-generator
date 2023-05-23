@@ -37,13 +37,14 @@ func (t *twitterAdapter) PublishImagePost(ctx context.Context, image domain.Imag
 }
 
 func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID string) error {
+
 	tweetData := struct {
 		Text        string `json:"text"`
 		Attachments struct {
 			MediaIDs []string `json:"media_ids"`
 		} `json:"media"`
 	}{
-		Text: tweetText,
+		Text: truncateString(tweetText),
 	}
 
 	tweetData.Attachments.MediaIDs = append(tweetData.Attachments.MediaIDs, mediaID)
@@ -152,4 +153,15 @@ func NewTwitterAdapterFromEnv() (ports.SocialMediaAdapter, error) {
 	token := oauth1.NewToken(values["TWITTER_ACCESS_TOKEN"], values["TWITTER_ACCESS_TOKEN_SECRET"])
 
 	return NewTwitterSocialMediaAdapter(config.Client(oauth1.NoContext, token), http.DefaultClient), nil
+}
+
+// truncateString breaks a string up into a chunk of size up to 280.
+func truncateString(s string) string {
+	runeStr := []rune(s) // Convert to runes for proper handling of special characters
+
+	if len(runeStr) > 280 {
+		runeStr = runeStr[:280]
+	}
+
+	return string(runeStr)
 }
