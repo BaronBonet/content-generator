@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/BaronBonet/content-generator/internal/core/domain"
+	"github.com/BaronBonet/content-generator/internal/core/ports"
 	"github.com/stretchr/testify/mock"
 	"io/ioutil"
 	"net/http"
@@ -64,12 +67,11 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 			httpDoCalls:     2,
 		},
 	}
-
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mockOAuthClient := newMockHttpClient(t)
 			mockClient := newMockHttpClient(t)
-
+			mockLogger := ports.NewMockLogger(t)
 			mockClient.On("Get", "https://test.com/test.png").Return(&http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(strings.NewReader("test image")),
@@ -82,7 +84,6 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 
 			if tc.imageUploadCode == http.StatusOK {
 				mockOAuthClient.On("Do", mock.MatchedBy(func(req *http.Request) bool {
-
 					reqBytes, _ := ioutil.ReadAll(req.Body)
 					req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBytes)) // Reconstruct req.Body as it has been read
 					t := tweet{}
@@ -90,17 +91,38 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 					if err != nil {
 						return false
 					}
+					if len(t.Text) > 280 {
+						mockLogger.On("Warn", "Tweet was truncated to 280 characters", "full tweet", t.Text).Once()
+					}
 					// Verify the length of the tweet text.
-					return len(t.Text) <= 280
+					return t.Text == tc.prompt
+				})).Return(&http.Response{
+					StatusCode: tc.tweetCode,
+					Body:       ioutil.NopCloser(strings.NewReader(tc.tweetResp)),
+				}, nil).Once()
+
+				mockOAuthClient.On("Do", mock.MatchedBy(func(req *http.Request) bool {
+					reqBytes, _ := ioutil.ReadAll(req.Body)
+					req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBytes)) // Reconstruct req.Body as it has been read
+					t := replyTweet{}
+					err := json.Unmarshal(reqBytes, &t)
+					if err != nil {
+						return false
+					}
+					if len(t.Text) > 280 {
+						mockLogger.On("Warn", "Tweet was truncated to 280 characters", "full tweet", t.Text).Once()
+					}
+					// Verify the length of the tweet text.
+					return t.Text == fmt.Sprintf("Created by %s with the prompt:\n\n%s", "https://example.com", tc.prompt)
 				})).Return(&http.Response{
 					StatusCode: tc.tweetCode,
 					Body:       ioutil.NopCloser(strings.NewReader(tc.tweetResp)),
 				}, nil).Once()
 			}
 
-			adapter := NewTwitterSocialMediaAdapter(mockOAuthClient, mockClient)
+			adapter := NewTwitterSocialMediaAdapter(mockOAuthClient, mockClient, mockLogger)
 
-			err := adapter.PublishImagePost(context.Background(), "https://test.com/test.png", tc.prompt, "https://example.com")
+			err := adapter.PublishImagePost(context.Background(), "https://test.com/test.png", tc.prompt, "dalle","https://example.com")
 
 			if (err != nil && tc.expectedError == nil) ||
 				(err == nil && tc.expectedError != nil) ||
@@ -109,6 +131,7 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 			}
 			mockOAuthClient.AssertNumberOfCalls(t, "Do", tc.httpDoCalls)
 
+			mockLogger.AssertExpectations(t)
 		})
 	}
-}
+	``

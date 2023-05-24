@@ -25,6 +25,10 @@ func NewDalleImageGenerationAdapter(apiKey string, httpClient httpClient) ports.
 	}
 }
 
+func (d *dalleAdapter) GetGeneratorName() string {
+	return "DALL-E"
+}
+
 func (d *dalleAdapter) GenerateImage(ctx context.Context, prompt string) (domain.ImagePath, error) {
 	requestBody := map[string]interface{}{
 		"prompt": prompt,

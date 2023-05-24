@@ -37,6 +37,10 @@ func (l *zapLogger) Info(msg string, keysAndValues ...interface{}) {
 	l.log(zap.InfoLevel, msg, keysAndValues...)
 }
 
+func (l *zapLogger) Warn(msg string, keysAndValues ...interface{}) {
+	l.log(zap.WarnLevel, msg, keysAndValues...)
+}
+
 func (l *zapLogger) Error(msg string, keysAndValues ...interface{}) {
 	l.log(zap.ErrorLevel, msg, keysAndValues...)
 }

@@ -27,6 +27,8 @@ type LLMAdapter interface {
 type ImageGenerationAdapter interface {
 	// GenerateImage generates an image from a prompt
 	GenerateImage(ctx context.Context, prompt string) (domain.ImagePath, error)
+	// GetGeneratorName returns the name of the generator e.g. "DALL-E" or "Midjourney"
+	GetGeneratorName() string
 }
 
 // SocialMediaAdapter is responsible for connecting to social media services like Twitter
@@ -34,5 +36,5 @@ type ImageGenerationAdapter interface {
 //go:generate mockery --name=SocialMediaAdapter
 type SocialMediaAdapter interface {
 	// PublishImagePost publishes an image post to a social media service
-	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt string, sourceUrl string) error
+	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt string, imageGeneratorName string, newsArticle domain.NewsArticle) error
 }

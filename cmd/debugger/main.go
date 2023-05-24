@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"os"
-	"time"
 )
 
 func main() {
@@ -28,14 +27,13 @@ func main() {
 
 	imageGenerationAdapter := adapters.NewDalleImageGenerationAdapter(OpenAIKey, http.DefaultClient)
 
-	socialMediaAdapter, err := adapters.NewTwitterAdapterFromEnv()
+	socialMediaAdapter, err := adapters.NewTwitterAdapterFromEnv(logger)
 	if err != nil {
 		logger.Fatal("Error when creating twitter adapter", "error", err)
 	}
 
 	contentService := service.NewNewsContentService(logger, newsAdapter, llmAdapter, imageGenerationAdapter, socialMediaAdapter)
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
 	err = contentService.GenerateNewsContent(ctx)
 	if err != nil {

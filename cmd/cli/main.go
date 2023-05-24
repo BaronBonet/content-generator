@@ -34,7 +34,7 @@ func main() {
 
 	imageGenerationAdapter := adapters.NewDalleImageGenerationAdapter(OpenAIKey, http.DefaultClient)
 
-	socialMediaAdapter, err := adapters.NewTwitterAdapterFromEnv()
+	socialMediaAdapter, err := adapters.NewTwitterAdapterFromEnv(logger)
 	if err != nil {
 		logger.Fatal("Error when creating twitter adapter", "error", err)
 	}
