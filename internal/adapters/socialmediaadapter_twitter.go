@@ -9,7 +9,7 @@ import (
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
 	"github.com/dghubble/oauth1"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -17,7 +17,7 @@ import (
 
 type twitterAdapter struct {
 	httpOAuthClient httpClient
-	httpClient      httpClient
+	httpClient      httpClient // Used for downloading images
 	logger          ports.Logger
 }
 
@@ -42,7 +42,7 @@ func (t *twitterAdapter) PublishImagePost(ctx context.Context, image domain.Imag
 		return err
 	}
 
-	tweetID, err := t.createTweet(ctx, newsArticle.Title+" "+newsArticle.Url, mediaID)
+	tweetID, err := t.createTweet(ctx, t.truncateString(newsArticle.Title+" "+newsArticle.Url), mediaID)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (t *twitterAdapter) PublishImagePost(ctx context.Context, image domain.Imag
 func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID string) (string, error) {
 
 	tweetData := tweet{
-		Text: t.truncateString(tweetText),
+		Text: tweetText,
 	}
 	tweetData.Attachments.MediaIDs = append(tweetData.Attachments.MediaIDs, mediaID)
 
@@ -76,7 +76,7 @@ func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID str
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	bodyBytes, _ := io.ReadAll(resp.Body)
 	bodyString := string(bodyBytes)
 
 	if resp.StatusCode != http.StatusCreated {
@@ -99,6 +99,7 @@ func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID str
 	return response.Data.ID, nil
 }
 
+// uploadImage uploads an image to Twitter and returns the media ID, uses the v1.1 API
 func (t *twitterAdapter) uploadImage(ctx context.Context, imageURL string) (string, error) {
 	resp, err := t.httpClient.Get(imageURL)
 	if err != nil {
@@ -110,7 +111,7 @@ func (t *twitterAdapter) uploadImage(ctx context.Context, imageURL string) (stri
 		return "", fmt.Errorf("failed to download image, status code: %d", resp.StatusCode)
 	}
 
-	imgData, err := ioutil.ReadAll(resp.Body)
+	imgData, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read image data: %w", err)
 	}
@@ -140,7 +141,7 @@ func (t *twitterAdapter) uploadImage(ctx context.Context, imageURL string) (stri
 
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}
@@ -190,7 +191,7 @@ func (t *twitterAdapter) replyToTweet(ctx context.Context, originalTweetID, repl
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 		t.logger.Error("failed to post tweet reply", "response body", string(bodyBytes))
 		return fmt.Errorf("failed to post reply tweet, status code: %d", resp.StatusCode)
 	}

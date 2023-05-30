@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/BaronBonet/content-generator/internal/infrastructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -10,14 +12,6 @@ import (
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
 )
-
-// tearDownAdapters resets the mocks so that they can be reused
-func tearDownAdapters(adapters ...*mock.Mock) {
-	for _, adapter := range adapters {
-		adapter.ExpectedCalls = []*mock.Call{}
-		adapter.Calls = []mock.Call{}
-	}
-}
 
 func TestService_GenerateNewsContent(t *testing.T) {
 	mockLogger := ports.NewMockLogger(t)
@@ -35,10 +29,21 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "Success",
 			setupMocks: func() {
 				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
-				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article", Body: "Test body"}, nil)
-				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("Test Image Prompt", nil)
-				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
-				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				newsArticle := domain.NewsArticle{Title: "Test Article", Body: "Test body"}
+				mockNewsAdapter.On("GetMainArticle", mock.AnythingOfType("*context.emptyCtx")).Return(newsArticle, nil)
+				prompt := fmt.Sprintf("Generate a single sentence image prompt based on the following news title and body:"+
+					"\nTitle: %s"+
+					"\nBody: %s"+
+					"\n\nExamples of good prompts"+
+					"\n- 3D render of a pink balloon dog in a violet room"+
+					"\n- Illustration of a happy cat sitting on a couch in a living room with a coffee mug in its hand", newsArticle.Title, newsArticle.Body)
+
+				llmAdapter.On("Chat", mock.AnythingOfType("*context.emptyCtx"), prompt).Return(prompt, nil)
+				imagePath := "https://test.com/test.jpg"
+				generatorName := "TestGenerator"
+				mockImageGenerationAdapter.On("GenerateImage", mock.AnythingOfType("*context.emptyCtx"), prompt).Return(domain.ImagePath(imagePath), nil)
+				mockImageGenerationAdapter.On("GetGeneratorName").Return(generatorName)
+				mockSocialMediaAdapter.On("PublishImagePost", mock.AnythingOfType("*context.emptyCtx"), domain.ImagePath(imagePath), prompt, generatorName, newsArticle).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -77,7 +82,8 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("Test Image Prompt", nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
-				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
+				mockImageGenerationAdapter.On("GetGeneratorName").Return("TestGenerator")
+				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
@@ -101,7 +107,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 
 			assert.Equal(t, tc.expectedError, err)
 
-			tearDownAdapters(&mockNewsAdapter.Mock,
+			infrastructure.TearDownAdapters(&mockNewsAdapter.Mock,
 				&llmAdapter.Mock,
 				&mockImageGenerationAdapter.Mock,
 				&mockSocialMediaAdapter.Mock,
