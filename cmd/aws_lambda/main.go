@@ -5,7 +5,6 @@ import (
 	"github.com/BaronBonet/content-generator/internal/core/service"
 	"github.com/BaronBonet/content-generator/internal/handlers"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
@@ -13,11 +12,6 @@ import (
 
 func main() {
 	logger := adapters.NewZapLogger(zap.NewDevelopmentConfig(), true)
-
-	err := godotenv.Load()
-	if err != nil {
-		logger.Fatal("Error loading .env file")
-	}
 
 	NYTimesKey, exists := os.LookupEnv("NEW_YORK_TIMES_KEY")
 	if !exists {

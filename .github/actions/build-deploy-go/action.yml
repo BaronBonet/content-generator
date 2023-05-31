@@ -31,11 +31,11 @@ runs:
         cache-dependency-path: go.mod
         cache: true
 
-#    - name: Create bin for mockery
-#      shell: bash
-#      run: |
-#        mkdir -p "$PWD/bin"
-#        echo "$PWD/bin" >> $GITHUB_PATH
+    - name: Create bin for mockery
+      shell: bash
+      run: |
+        mkdir -p "$PWD/bin"
+        echo "$PWD/bin" >> $GITHUB_PATH
 
     - name: install mockery
       shell: bash
