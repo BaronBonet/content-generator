@@ -1,0 +1,22 @@
+name: On pull request main
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  go-lint-test:
+    name: Lint and test go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/lint-test-go
+
+  go-builder:
+    name: Build go
+    needs: go-lint-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/build-deploy-go

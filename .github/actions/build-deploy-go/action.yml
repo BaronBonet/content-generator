@@ -1,0 +1,72 @@
+name: Go zip builder and deployer
+
+inputs:
+  aws-access-key-id:
+    required: false
+  aws-secret-access-key:
+    required: false
+  tag:
+    required: false
+    default: undefined
+  deploy:
+    description: Whether to deploy the image to ECR since github actions don't have a boolean use 'true' or
+    required: false
+    default: false
+  s3-bucket-name:
+    description: The name of the S3 bucket to push the zip to
+    required: false
+    default: undefined
+  lambda-name:
+    description: The name of the aws lambda to update
+    required: false
+    default: undefined
+
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v3
+      with:
+        go-version-file: go.mod
+        cache-dependency-path: go.mod
+        cache: true
+
+#    - name: Create bin for mockery
+#      shell: bash
+#      run: |
+#        mkdir -p "$PWD/bin"
+#        echo "$PWD/bin" >> $GITHUB_PATH
+
+    - name: install mockery
+      shell: bash
+      run: |
+        tar -xz -C bin -f <(curl -Ls https://github.com/vektra/mockery/releases/download/v2.25.0/mockery_2.25.0_Linux_x86_64.tar.gz)
+
+    - name: build go for aws lambda
+      shell: bash
+      run: make build-go-aws
+
+    - name: Configure AWS
+      if: ${{ inputs.deploy == 'true' }}
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: eu-central-1
+
+    - name: Push to S3
+      shell: bash
+      if: ${{ inputs.deploy == 'true' }}
+      run: |
+        aws s3 cp out/handler/main.zip \
+          s3://${{ inputs.s3-bucket-name }}/${{ inputs.tag }}.zip
+        aws s3 cp s3://${{ inputs.s3-bucket-name }}/${{ inputs.tag }}.zip \
+          s3://${{ inputs.s3-bucket-name }}/latest.zip
+
+    - name: Update lambda
+      shell: bash
+      if: ${{ inputs.deploy == 'true' }}
+      run: |
+        aws lambda update-function-code --function-name ${{ inputs.lambda-name }} \
+          --s3-bucket ${{ inputs.s3-bucket-name }} \
+          --s3-key ${{ inputs.tag }}.zip

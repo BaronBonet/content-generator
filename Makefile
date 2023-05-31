@@ -24,3 +24,12 @@ build-cli: generate-go
 .PHONY: test
 test: generate-go
 	@go test -v ./...
+
+
+.PHONY: tf-plan
+tf-plan:
+	@cd ./terraform && terraform plan -var-file=variables.tfvars
+
+.PHONY: tf-apply
+tf-apply:
+	@cd ./terraform && terraform apply -var-file=variables.tfvars

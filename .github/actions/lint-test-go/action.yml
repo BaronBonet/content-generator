@@ -1,0 +1,46 @@
+name: Go lint, test
+description: Lint and test go code
+
+runs:
+  using: composite
+  steps:
+    - name: Setup go
+      uses: actions/setup-go@v3
+      with:
+        token: ${{ github.token }}
+        go-version-file: go.mod
+        cache-dependency-path: go.mod
+        cache: true
+
+    - name: Set path
+      shell: bash
+      run: |
+         mkdir -p "$PWD/bin"
+         echo "$PWD/bin" >> $GITHUB_PATH
+
+    - name: install mockery
+      shell: bash
+      run: |
+        tar -xz -C bin -f <(curl -Ls https://github.com/vektra/mockery/releases/download/v2.25.0/mockery_2.25.0_Linux_x86_64.tar.gz)
+
+    - name: generate proto stubs
+      shell: bash
+      run: make generate-go
+
+    - name: Test
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
+      run: go test ./...
+
+    - name: Run go vet
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
+      run: go vet ./...
+
+    - name: Run Staticcheck
+      uses: dominikh/staticcheck-action@v1.3.0
+      with:
+        install-go: false
+        cache-key: ubuntu-${{ steps.setup-go.outputs.go-version }}
+        checks: "all -ST1000 -ST1003"
+        working-directory: .

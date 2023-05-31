@@ -3,6 +3,7 @@ module github.com/BaronBonet/content-generator
 go 1.20
 
 require (
+	github.com/aws/aws-lambda-go v1.41.0
 	github.com/dghubble/oauth1 v0.7.2
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.2
