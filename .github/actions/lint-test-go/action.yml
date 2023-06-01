@@ -12,7 +12,7 @@ runs:
         cache-dependency-path: go.mod
         cache: true
 
-    - name: Set path
+    - name: Create bin for mockery
       shell: bash
       run: |
          mkdir -p "$PWD/bin"
@@ -23,18 +23,16 @@ runs:
       run: |
         tar -xz -C bin -f <(curl -Ls https://github.com/vektra/mockery/releases/download/v2.25.0/mockery_2.25.0_Linux_x86_64.tar.gz)
 
-    - name: generate proto stubs
+    - name: generate
       shell: bash
       run: make generate-go
 
     - name: Test
       shell: bash
-      working-directory: ${{ inputs.working-dir }}
       run: go test ./...
 
     - name: Run go vet
       shell: bash
-      working-directory: ${{ inputs.working-dir }}
       run: go vet ./...
 
     - name: Run Staticcheck

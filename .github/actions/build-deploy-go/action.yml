@@ -11,15 +11,12 @@ inputs:
   deploy:
     description: Whether to deploy the image to ECR since github actions don't have a boolean use 'true' or
     required: false
-    default: false
   s3-bucket-name:
     description: The name of the S3 bucket to push the zip to
     required: false
-    default: undefined
   lambda-name:
     description: The name of the aws lambda to update
     required: false
-    default: undefined
 
 
 runs:
