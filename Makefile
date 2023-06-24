@@ -1,5 +1,9 @@
 export VERSION := $(shell ./scripts/get-version.sh)
 
+OUT_DIR=out
+ARCH=arm64
+OS=linux
+
 .PHONY: clean
 clean:
 	@find . -type f -name 'mock_*' -delete
@@ -20,6 +24,15 @@ build-cli: generate-go
 	@chmod +x content-generator
 	@echo "Done building CLI."
 
+.PHONY: build-go-aws
+build-go-aws: generate-go
+	@echo "Building content generator for AWS version ${VERSION}"
+	@go get ./... && \
+		GOOS=${OS} GOARCH=${ARCH} go build -ldflags \
+		 "-X 'github.com/BaronBonet/content-generator/internal/infrastructure.Version=${VERSION}'" \
+		 -o ${OUT_DIR}/handler/bootstrap cmd/aws_lambda/*go
+	@zip -jrm "./${OUT_DIR}/handler/main.zip" "./${OUT_DIR}/handler/"*
+	@echo "Done building for AWS."
 
 .PHONY: test
 test: generate-go

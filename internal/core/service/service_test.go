@@ -34,7 +34,8 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				prompt := fmt.Sprintf("Generate a single sentence image prompt based on the following news title and body:"+
 					"\nTitle: %s"+
 					"\nBody: %s"+
-					"\n\nExamples of good prompts"+
+					"\n Do not include prompts that will be rejected by the Dalle safety system. For example mentioning dictators like Vladimir Putin."+
+					"\n\n Examples of good prompts"+
 					"\n- 3D render of a pink balloon dog in a violet room"+
 					"\n- Illustration of a happy cat sitting on a couch in a living room with a coffee mug in its hand", newsArticle.Title, newsArticle.Body)
 
@@ -100,7 +101,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockNewsAdapter,
 				llmAdapter,
 				mockImageGenerationAdapter,
-				mockSocialMediaAdapter,
+				[]ports.SocialMediaAdapter{mockSocialMediaAdapter},
 			)
 
 			err := srv.GenerateNewsContent(context.Background())

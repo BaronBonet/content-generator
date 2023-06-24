@@ -7,3 +7,5 @@ content-generator
 .terraform
 .terraform.lock.hcl
 templates
+out
+debugger
