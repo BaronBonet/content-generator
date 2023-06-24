@@ -48,7 +48,7 @@ func NewCLIHandler(ctx context.Context, service ports.Service) *CliHandler {
 			},
 			{
 				Name:  "generateImage",
-				Usage: "Create an image and get the url to the image",
+				Usage: "Create an image and get the url to the image, requires entering a prompt",
 				Action: func(c *cli.Context) error {
 					prompt := c.Args().Get(0)
 					if prompt == "" {

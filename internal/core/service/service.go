@@ -65,7 +65,6 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 	for err := range errCh {
 		if err != nil {
 			srv.logger.Error("Error when posting image", "error", err)
-			return err
 		}
 	}
 
