@@ -88,7 +88,8 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
-			expectedError: errors.New("social media error"),
+			// We don't want it to retry if the social media adapters fails
+			expectedError: nil,
 		},
 	}
 
