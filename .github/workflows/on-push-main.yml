@@ -1,10 +1,9 @@
 name: On push main
 
 on:
-  push
-#  push:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main
 
 jobs:
   create-tag:

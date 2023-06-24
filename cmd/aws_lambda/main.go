@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/BaronBonet/content-generator/internal/adapters"
+	"github.com/BaronBonet/content-generator/internal/core/ports"
 	"github.com/BaronBonet/content-generator/internal/core/service"
 	"github.com/BaronBonet/content-generator/internal/handlers"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -28,12 +29,13 @@ func main() {
 
 	imageGenerationAdapter := adapters.NewDalleImageGenerationAdapter(OpenAIKey, http.DefaultClient)
 
-	socialMediaAdapter, err := adapters.NewTwitterAdapterFromEnv(logger)
+	twitterAdapter, err := adapters.NewTwitterAdapterFromEnv(logger)
 	if err != nil {
 		logger.Fatal("Error when creating twitter adapter", "error", err)
 	}
+	instagramAdapter, err := adapters.NewInstagramAdapterFromEnv()
 
-	contentService := service.NewNewsContentService(logger, newsAdapter, llmAdapter, imageGenerationAdapter, socialMediaAdapter)
+	contentService := service.NewNewsContentService(logger, newsAdapter, llmAdapter, imageGenerationAdapter, []ports.SocialMediaAdapter{instagramAdapter, twitterAdapter})
 
 	handler := handlers.NewAWSLambdaEventHandler(logger, contentService)
 	lambda.Start(handler.HandleEvent)

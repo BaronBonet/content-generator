@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
+	"sync"
 )
 
 type service struct {
-	logger             ports.Logger
-	newsAdapter        ports.NewsAdapter
-	llmAdapter         ports.LLMAdapter
-	generationAdapter  ports.ImageGenerationAdapter
-	socialMediaAdapter ports.SocialMediaAdapter
+	logger              ports.Logger
+	newsAdapter         ports.NewsAdapter
+	llmAdapter          ports.LLMAdapter
+	generationAdapter   ports.ImageGenerationAdapter
+	socialMediaAdapters []ports.SocialMediaAdapter
 }
 
 func (srv *service) GenerateNewsContent(ctx context.Context) error {
@@ -26,7 +27,8 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 	prompt := fmt.Sprintf("Generate a single sentence image prompt based on the following news title and body:"+
 		"\nTitle: %s"+
 		"\nBody: %s"+
-		"\n\nExamples of good prompts"+
+		"\n Do not include prompts that will be rejected by the Dalle safety system. For example mentioning dictators like Vladimir Putin."+
+		"\n\n Examples of good prompts"+
 		"\n- 3D render of a pink balloon dog in a violet room"+
 		"\n- Illustration of a happy cat sitting on a couch in a living room with a coffee mug in its hand", article.Title, article.Body)
 
@@ -42,12 +44,32 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 		return err
 	}
 	srv.logger.Debug("Generated image", "image", image)
-	err = srv.socialMediaAdapter.PublishImagePost(ctx, image, imagePrompt, srv.generationAdapter.GetGeneratorName(), article)
-	if err != nil {
-		srv.logger.Error("Error when posting image", "error", err)
-		return err
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, len(srv.socialMediaAdapters))
+
+	for _, adapter := range srv.socialMediaAdapters {
+		wg.Add(1)
+		go func(adapter ports.SocialMediaAdapter) {
+			defer wg.Done()
+			if err := adapter.PublishImagePost(ctx, image, imagePrompt, srv.generationAdapter.GetGeneratorName(), article); err != nil {
+				errCh <- err
+			}
+		}(adapter)
 	}
-	srv.logger.Debug("Published image to social media")
+
+	wg.Wait()
+
+	close(errCh)
+
+	for err := range errCh {
+		if err != nil {
+			srv.logger.Error("Error when posting image", "error", err)
+			return err
+		}
+	}
+
+	srv.logger.Debug("Published image to social medias")
 	return nil
 }
 
@@ -64,13 +86,13 @@ func NewNewsContentService(
 	externalNewsAdapter ports.NewsAdapter,
 	llmAdapter ports.LLMAdapter,
 	imageGenerationAdapter ports.ImageGenerationAdapter,
-	postingRepo ports.SocialMediaAdapter,
+	postingRepos []ports.SocialMediaAdapter,
 ) ports.Service {
 	return &service{
-		logger:             logger,
-		newsAdapter:        externalNewsAdapter,
-		llmAdapter:         llmAdapter,
-		generationAdapter:  imageGenerationAdapter,
-		socialMediaAdapter: postingRepo,
+		logger:              logger,
+		newsAdapter:         externalNewsAdapter,
+		llmAdapter:          llmAdapter,
+		generationAdapter:   imageGenerationAdapter,
+		socialMediaAdapters: postingRepos,
 	}
 }
