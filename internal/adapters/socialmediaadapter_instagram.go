@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
-	"github.com/Davincible/goinsta"
+	"github.com/Davincible/goinsta/v3"
 	"image"
 	"image/jpeg"
 	"net/http"
