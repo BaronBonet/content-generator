@@ -1,0 +1,21 @@
+s: Content Generation Service {
+    news: News Port
+    llm: LLM Port
+    image: Image Generation Port
+    sm: Social Media Port
+
+    news -> llm: News Article
+    llm -> image: Prompt to generate image
+    image -> sm: Image url & caption
+    }
+
+
+nyt: External News Source \n e.g. New York Times API
+chatgpt: LLM Service \n e.g. ChatGPT API
+dalle: Image Generation Service\n e.g. DALL·E API
+socialMedia: Social Media \n e.g. Twitter API
+
+s.news -> nyt: Get latest article
+s.sm -> socialMedia: Post image and caption \n to social media
+s.llm -> chatgpt: Generate prompt to create image \n from News Article
+s.image -> dalle: Generate Image
