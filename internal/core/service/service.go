@@ -51,6 +51,7 @@ func (srv *service) GenerateNewsContent(ctx context.Context) error {
 	for _, adapter := range srv.socialMediaAdapters {
 		wg.Add(1)
 		go func(adapter ports.SocialMediaAdapter) {
+			srv.logger.Debug("Publishing image to social media", "adapter", adapter.GetName())
 			defer wg.Done()
 			if err := adapter.PublishImagePost(ctx, image, imagePrompt, srv.generationAdapter.GetGeneratorName(), article); err != nil {
 				errCh <- err

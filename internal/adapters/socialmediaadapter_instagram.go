@@ -16,18 +16,22 @@ import (
 type instagramAdapter struct {
 	username string
 	password string
+	logger   ports.Logger
 }
 
-func NewInstagramSocialMediaAdapter(username string, password string) ports.SocialMediaAdapter {
+func NewInstagramSocialMediaAdapter(logger ports.Logger, username string, password string) ports.SocialMediaAdapter {
 	return &instagramAdapter{
 		username: username,
 		password: password,
+		logger:   logger,
 	}
 }
 
 func (i *instagramAdapter) PublishImagePost(ctx context.Context, imagePath domain.ImagePath, prompt string, imageGeneratorName string, newsArticle domain.NewsArticle) error {
+	i.logger.Debug("Trying to login to instagram")
 	insta := goinsta.New(i.username, i.password)
 	err := insta.Login()
+	i.logger.Debug("Logged into instagram")
 	if err != nil {
 		return fmt.Errorf("failed to login to Instagram: %w", err)
 	}
@@ -35,13 +39,13 @@ func (i *instagramAdapter) PublishImagePost(ctx context.Context, imagePath domai
 	if err != nil {
 		return fmt.Errorf("failed to download image: %w", err)
 	}
+	i.logger.Debug("Downloaded image")
 
 	img, _, err := image.Decode(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to decode image: %w", err)
 	}
 
-	// Convert image to JPEG
 	var buf bytes.Buffer
 	err = jpeg.Encode(&buf, img, &jpeg.Options{Quality: 95})
 	if err != nil {
@@ -49,12 +53,15 @@ func (i *instagramAdapter) PublishImagePost(ctx context.Context, imagePath domai
 	}
 
 	reader := bytes.NewReader(buf.Bytes()) // convert buf to io.Reader
+	i.logger.Debug("Converted image to io.Reader")
 
 	defer resp.Body.Close()
+	caption := createInstagramCaption(prompt, imageGeneratorName, newsArticle)
+	i.logger.Debug("Uploading image with caption", "caption", caption)
 	_, err = insta.Upload(
 		&goinsta.UploadOptions{
 			File:    reader,
-			Caption: createInstagramCaption(prompt, imageGeneratorName, newsArticle),
+			Caption: caption,
 		},
 	)
 	if err != nil {
@@ -63,12 +70,16 @@ func (i *instagramAdapter) PublishImagePost(ctx context.Context, imagePath domai
 	return nil
 }
 
-func createInstagramCaption(prompt string, imageGeneratorName string, newsArticle domain.NewsArticle) string {
-	return fmt.Sprintf("AI Generated Content\n\n%s \n%s\n\n"+
-		"Created by %s with the prompt:\n\n%s", newsArticle.Title, newsArticle.Url, imageGeneratorName, prompt)
+func (i *instagramAdapter) GetName() string {
+	return "Instagram"
 }
 
-func NewInstagramAdapterFromEnv() (ports.SocialMediaAdapter, error) {
+func createInstagramCaption(prompt string, imageGeneratorName string, newsArticle domain.NewsArticle) string {
+	return fmt.Sprintf("AI Generated Content, from the %s \n\nArticle Title: %s\n\n"+
+		"Created by %s with the prompt:\n\n%s", newsArticle.Source, newsArticle.Title, imageGeneratorName, prompt)
+}
+
+func NewInstagramAdapterFromEnv(logger ports.Logger) (ports.SocialMediaAdapter, error) {
 	keys := []string{"INSTAGRAM_USERNAME", "INSTAGRAM_PASSWORD"}
 
 	values := make(map[string]string, len(keys))
@@ -80,6 +91,7 @@ func NewInstagramAdapterFromEnv() (ports.SocialMediaAdapter, error) {
 		values[key] = value
 	}
 	return NewInstagramSocialMediaAdapter(
+		logger,
 		values["INSTAGRAM_USERNAME"],
 		values["INSTAGRAM_PASSWORD"],
 	), nil

@@ -45,6 +45,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockImageGenerationAdapter.On("GenerateImage", mock.AnythingOfType("*context.emptyCtx"), prompt).Return(domain.ImagePath(imagePath), nil)
 				mockImageGenerationAdapter.On("GetGeneratorName").Return(generatorName)
 				mockSocialMediaAdapter.On("PublishImagePost", mock.AnythingOfType("*context.emptyCtx"), domain.ImagePath(imagePath), prompt, generatorName, newsArticle).Return(nil)
+				mockSocialMediaAdapter.On("GetName").Return("Twitter")
 			},
 			expectedError: nil,
 		},
@@ -87,6 +88,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
 				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
+				mockSocialMediaAdapter.On("GetName").Return("Twitter")
 			},
 			// We don't want it to retry if the social media adapters fails
 			expectedError: nil,

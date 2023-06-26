@@ -52,6 +52,10 @@ func (t *twitterAdapter) PublishImagePost(ctx context.Context, image domain.Imag
 	return t.replyToTweet(ctx, tweetID, reply)
 }
 
+func (t *twitterAdapter) GetName() string {
+	return "Twitter"
+}
+
 func (t *twitterAdapter) createTweet(ctx context.Context, tweetText, mediaID string) (string, error) {
 
 	tweetData := tweet{
