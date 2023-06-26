@@ -3,10 +3,11 @@ package domain
 import "time"
 
 type NewsArticle struct {
-	Title string
-	Body  string
-	Date  Date
-	Url   string
+	Title  string
+	Body   string
+	Date   Date
+	Url    string
+	Source string
 }
 
 type Date struct {

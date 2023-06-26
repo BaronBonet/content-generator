@@ -37,4 +37,5 @@ type ImageGenerationAdapter interface {
 type SocialMediaAdapter interface {
 	// PublishImagePost publishes an image post to a social media service
 	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt string, imageGeneratorName string, newsArticle domain.NewsArticle) error
+	GetName() string
 }

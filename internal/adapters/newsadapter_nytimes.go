@@ -75,7 +75,8 @@ func (n *nyTimesAdapter) GetMainArticle(ctx context.Context) (domain.NewsArticle
 			Month: date.Month(),
 			Year:  date.Year(),
 		},
-		Url: mainArticle.Url,
+		Source: "New York Times",
+		Url:    mainArticle.Url,
 	}, nil
 }
 

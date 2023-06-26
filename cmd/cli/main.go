@@ -39,7 +39,7 @@ func main() {
 	if err != nil {
 		logger.Fatal("Error when creating twitter adapter", "error", err)
 	}
-	instagramAdapter, err := adapters.NewInstagramAdapterFromEnv()
+	instagramAdapter, err := adapters.NewInstagramAdapterFromEnv(logger)
 
 	contentService := service.NewNewsContentService(logger, newsAdapter, llmAdapter, imageGenerationAdapter, []ports.SocialMediaAdapter{instagramAdapter, twitterAdapter})
 	ctx := context.Background()
