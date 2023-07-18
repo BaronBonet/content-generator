@@ -3,16 +3,18 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/BaronBonet/content-generator/internal/core/ports"
-	"github.com/urfave/cli/v2"
 	"sort"
+
+	"github.com/BaronBonet/content-generator/internal/core/ports"
+	"github.com/BaronBonet/go-logger/logger"
+	"github.com/urfave/cli/v2"
 )
 
 type CliHandler struct {
 	app *cli.App
 }
 
-func NewCLIHandler(ctx context.Context, service ports.Service) *CliHandler {
+func NewCLIHandler(ctx context.Context, service ports.Service, logger logger.Logger) *CliHandler {
 	app := &cli.App{
 		Name:                 "Generate News Content",
 		EnableBashCompletion: true,
@@ -42,7 +44,7 @@ func NewCLIHandler(ctx context.Context, service ports.Service) *CliHandler {
 					if err != nil {
 						return err
 					}
-					fmt.Println(prompt)
+					logger.Info("Created prompt", "prompt", prompt)
 					return nil
 				},
 			},

@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 )
 
@@ -38,4 +39,8 @@ type SocialMediaAdapter interface {
 	// PublishImagePost publishes an image post to a social media service
 	PublishImagePost(ctx context.Context, image domain.ImagePath, prompt string, imageGeneratorName string, newsArticle domain.NewsArticle) error
 	GetName() string
+}
+
+type RepositoryAdapter interface {
+	SavePost(ctx context.Context, image domain.ImagePath, prompt string, newsArticle domain.NewsArticle) error
 }

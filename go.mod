@@ -3,13 +3,13 @@ module github.com/BaronBonet/content-generator
 go 1.20
 
 require (
+	github.com/BaronBonet/go-logger v0.1.0
 	github.com/Davincible/goinsta/v3 v3.2.6
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/dghubble/oauth1 v0.7.2
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.25.3
-	go.uber.org/zap v1.24.0
 )
 
 require (
@@ -22,6 +22,7 @@ require (
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.2.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/lmittmann/tint v0.3.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -30,6 +31,8 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.24.0 // indirect
+	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
 	golang.org/x/sys v0.9.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

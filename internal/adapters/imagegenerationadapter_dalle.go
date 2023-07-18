@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/BaronBonet/content-generator/internal/core/domain"
-	"github.com/BaronBonet/content-generator/internal/core/ports"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/BaronBonet/content-generator/internal/core/domain"
+	"github.com/BaronBonet/content-generator/internal/core/ports"
 )
 
 const dalleAPIURL = "https://api.openai.com/v1/images/generations"
@@ -33,7 +34,7 @@ func (d *dalleAdapter) GenerateImage(ctx context.Context, prompt string) (domain
 	requestBody := map[string]interface{}{
 		"prompt": prompt,
 		"n":      1,
-		"size":   "256x256",
+		"size":   "1024x1024",
 	}
 	jsonRequestBody, err := json.Marshal(requestBody)
 	if err != nil {

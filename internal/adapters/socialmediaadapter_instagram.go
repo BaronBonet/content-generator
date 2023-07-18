@@ -4,22 +4,24 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/BaronBonet/content-generator/internal/core/domain"
-	"github.com/BaronBonet/content-generator/internal/core/ports"
-	"github.com/Davincible/goinsta/v3"
 	"image"
 	"image/jpeg"
 	"net/http"
 	"os"
+
+	"github.com/BaronBonet/content-generator/internal/core/domain"
+	"github.com/BaronBonet/content-generator/internal/core/ports"
+	"github.com/BaronBonet/go-logger/logger"
+	"github.com/Davincible/goinsta/v3"
 )
 
 type instagramAdapter struct {
 	username string
 	password string
-	logger   ports.Logger
+	logger   logger.Logger
 }
 
-func NewInstagramSocialMediaAdapter(logger ports.Logger, username string, password string) ports.SocialMediaAdapter {
+func NewInstagramSocialMediaAdapter(logger logger.Logger, username string, password string) ports.SocialMediaAdapter {
 	return &instagramAdapter{
 		username: username,
 		password: password,
@@ -79,7 +81,7 @@ func createInstagramCaption(prompt string, imageGeneratorName string, newsArticl
 		"Created by %s with the prompt:\n\n%s", newsArticle.Source, newsArticle.Title, imageGeneratorName, prompt)
 }
 
-func NewInstagramAdapterFromEnv(logger ports.Logger) (ports.SocialMediaAdapter, error) {
+func NewInstagramAdapterFromEnv(logger logger.Logger) (ports.SocialMediaAdapter, error) {
 	keys := []string{"INSTAGRAM_USERNAME", "INSTAGRAM_PASSWORD"}
 
 	values := make(map[string]string, len(keys))

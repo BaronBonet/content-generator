@@ -4,17 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/BaronBonet/content-generator/internal/infrastructure"
+	"github.com/BaronBonet/go-logger/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
 )
 
 func TestService_GenerateNewsContent(t *testing.T) {
-	mockLogger := ports.NewMockLogger(t)
+	testLogger := logger.NewTestLogger()
 	mockNewsAdapter := ports.NewMockNewsAdapter(t)
 	llmAdapter := ports.NewMockLLMAdapter(t)
 	mockImageGenerationAdapter := ports.NewMockImageGenerationAdapter(t)
@@ -28,7 +30,6 @@ func TestService_GenerateNewsContent(t *testing.T) {
 		{
 			name: "Success",
 			setupMocks: func() {
-				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 				newsArticle := domain.NewsArticle{Title: "Test Article", Body: "Test body"}
 				mockNewsAdapter.On("GetMainArticle", mock.AnythingOfType("*context.emptyCtx")).Return(newsArticle, nil)
 				prompt := fmt.Sprintf("Generate a single sentence image prompt based on the following news title and body:"+
@@ -53,7 +54,6 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			name: "NewsAdapterError",
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{}, errors.New("news error"))
-				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			},
 			expectedError: errors.New("news error"),
 		},
@@ -62,8 +62,6 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			setupMocks: func() {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("", errors.New("prompt error"))
-				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
 			expectedError: errors.New("prompt error"),
 		},
@@ -73,8 +71,6 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockNewsAdapter.On("GetMainArticle", mock.Anything).Return(domain.NewsArticle{Title: "Test Article"}, nil)
 				llmAdapter.On("Chat", mock.Anything, mock.Anything).Return("Test Image Prompt", nil)
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath(""), errors.New("generation error"))
-				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 			},
 			expectedError: errors.New("generation error"),
 		},
@@ -86,8 +82,6 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				mockImageGenerationAdapter.On("GenerateImage", mock.Anything, mock.Anything).Return(domain.ImagePath("Test Image Path"), nil)
 				mockImageGenerationAdapter.On("GetGeneratorName").Return("TestGenerator")
 				mockSocialMediaAdapter.On("PublishImagePost", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("social media error"))
-				mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-				mockLogger.On("Debug", mock.Anything, mock.Anything, mock.Anything)
 				mockSocialMediaAdapter.On("GetName").Return("Twitter")
 			},
 			// We don't want it to retry if the social media adapters fails
@@ -100,7 +94,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 			tc.setupMocks()
 
 			srv := NewNewsContentService(
-				mockLogger,
+				testLogger,
 				mockNewsAdapter,
 				llmAdapter,
 				mockImageGenerationAdapter,
@@ -115,7 +109,7 @@ func TestService_GenerateNewsContent(t *testing.T) {
 				&llmAdapter.Mock,
 				&mockImageGenerationAdapter.Mock,
 				&mockSocialMediaAdapter.Mock,
-				&mockLogger.Mock)
+			)
 		})
 	}
 }
