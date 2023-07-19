@@ -6,19 +6,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/BaronBonet/content-generator/internal/core/domain"
-	"github.com/BaronBonet/content-generator/internal/core/ports"
-	"github.com/dghubble/oauth1"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
+
+	"github.com/BaronBonet/content-generator/internal/core/domain"
+	"github.com/BaronBonet/content-generator/internal/core/ports"
+	"github.com/BaronBonet/go-logger/logger"
+	"github.com/dghubble/oauth1"
 )
 
 type twitterAdapter struct {
 	httpOAuthClient httpClient
 	httpClient      httpClient // Used for downloading images
-	logger          ports.Logger
+	logger          logger.Logger
 }
 
 type tweet struct {
@@ -28,7 +30,7 @@ type tweet struct {
 	} `json:"media"`
 }
 
-func NewTwitterSocialMediaAdapter(httpOAuthClient httpClient, httpClient httpClient, logger ports.Logger) ports.SocialMediaAdapter {
+func NewTwitterSocialMediaAdapter(httpOAuthClient httpClient, httpClient httpClient, logger logger.Logger) ports.SocialMediaAdapter {
 	return &twitterAdapter{
 		httpOAuthClient: httpOAuthClient,
 		httpClient:      httpClient,
@@ -216,7 +218,7 @@ func (t *twitterAdapter) truncateString(s string) string {
 }
 
 // NewTwitterAdapterFromEnv is a helper function to create a TwitterAdapter from environment variables
-func NewTwitterAdapterFromEnv(logger ports.Logger) (ports.SocialMediaAdapter, error) {
+func NewTwitterAdapterFromEnv(logger logger.Logger) (ports.SocialMediaAdapter, error) {
 	keys := []string{"TWITTER_API_KEY", "TWITTER_API_KEY_SECRET", "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_TOKEN_SECRET"}
 
 	values := make(map[string]string, len(keys))

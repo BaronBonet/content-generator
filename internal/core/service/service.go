@@ -3,13 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/BaronBonet/content-generator/internal/core/domain"
 	"github.com/BaronBonet/content-generator/internal/core/ports"
-	"sync"
+	"github.com/BaronBonet/go-logger/logger"
 )
 
 type service struct {
-	logger              ports.Logger
+	logger              logger.Logger
 	newsAdapter         ports.NewsAdapter
 	llmAdapter          ports.LLMAdapter
 	generationAdapter   ports.ImageGenerationAdapter
@@ -82,7 +84,7 @@ func (srv *service) GenerateImage(ctx context.Context, prompt string) (domain.Im
 }
 
 func NewNewsContentService(
-	logger ports.Logger,
+	logger logger.Logger,
 	externalNewsAdapter ports.NewsAdapter,
 	llmAdapter ports.LLMAdapter,
 	imageGenerationAdapter ports.ImageGenerationAdapter,

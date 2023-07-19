@@ -4,21 +4,22 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/BaronBonet/content-generator/internal/core/domain"
-	"github.com/BaronBonet/content-generator/internal/core/ports"
-	"github.com/BaronBonet/content-generator/internal/infrastructure"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/BaronBonet/content-generator/internal/core/domain"
+	"github.com/BaronBonet/content-generator/internal/infrastructure"
+	"github.com/BaronBonet/go-logger/logger"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 	mockOAuthClient := newMockHttpClient(t)
 	mockClient := newMockHttpClient(t)
-	mockLogger := ports.NewMockLogger(t)
+	testLogger := logger.NewTestLogger()
 
 	type testCase struct {
 		name          string
@@ -61,7 +62,6 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 					StatusCode: http.StatusOK,
 					Body:       io.NopCloser(strings.NewReader(`{"media_id_string": "12345"}`)),
 				}, nil).Once()
-				mockLogger.On("Warn", "Tweet was truncated to 280 characters", "full tweet", tc.newsArticle.Title+" "+tc.newsArticle.Url).Once()
 				mockOAuthClient.On("Do", mock.Anything).Return(&http.Response{
 					StatusCode: http.StatusCreated,
 					Body:       io.NopCloser(bytes.NewReader([]byte(`{"data": {"id": "67890", "text": "test text"}}`))),
@@ -82,13 +82,12 @@ func TestTwitterAdapter_PublishImagePost(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setupMocks(&tc)
-			twitterAdapter := NewTwitterSocialMediaAdapter(mockOAuthClient, mockClient, mockLogger)
+			twitterAdapter := NewTwitterSocialMediaAdapter(mockOAuthClient, mockClient, testLogger)
 			err := twitterAdapter.PublishImagePost(context.Background(), "https://test.com/test.png", tc.prompt, "test generator", tc.newsArticle)
 			require.Equal(t, tc.errorResponse, err)
 			mockOAuthClient.AssertExpectations(t)
 			mockClient.AssertExpectations(t)
-			mockLogger.AssertExpectations(t)
-			infrastructure.TearDownAdapters(&mockOAuthClient.Mock, &mockClient.Mock, &mockLogger.Mock)
+			infrastructure.TearDownAdapters(&mockOAuthClient.Mock, &mockClient.Mock)
 		})
 	}
 }

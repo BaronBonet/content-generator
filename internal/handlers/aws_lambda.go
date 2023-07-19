@@ -2,15 +2,17 @@ package handlers
 
 import (
 	"context"
+
 	"github.com/BaronBonet/content-generator/internal/core/ports"
+	"github.com/BaronBonet/go-logger/logger"
 )
 
 type AWSLambdaEventHandler struct {
-	logger ports.Logger
+	logger logger.Logger
 	srv    ports.Service
 }
 
-func NewAWSLambdaEventHandler(logger ports.Logger, srv ports.Service) *AWSLambdaEventHandler {
+func NewAWSLambdaEventHandler(logger logger.Logger, srv ports.Service) *AWSLambdaEventHandler {
 	return &AWSLambdaEventHandler{logger: logger, srv: srv}
 }
 
