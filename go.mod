@@ -3,7 +3,7 @@ module github.com/BaronBonet/content-generator
 go 1.20
 
 require (
-	github.com/BaronBonet/go-logger v0.1.0
+	github.com/BaronBonet/go-logger v0.2.0
 	github.com/Davincible/goinsta/v3 v3.2.6
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/dghubble/oauth1 v0.7.2

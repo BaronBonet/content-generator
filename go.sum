@@ -1,5 +1,5 @@
-github.com/BaronBonet/go-logger v0.1.0 h1:b+a5/KRRy2KU79eOQiMwxLHnty3iV+j1joxWgRx21+w=
-github.com/BaronBonet/go-logger v0.1.0/go.mod h1:qM6YmWO8MtxLJ8aqusdxt5dn3i2/YipWZ0fdxkVAwPU=
+github.com/BaronBonet/go-logger v0.2.0 h1:hoOFnOwuASGzj14ECeiUYRP4c7ScIFvlGRQqMJsS8AE=
+github.com/BaronBonet/go-logger v0.2.0/go.mod h1:qM6YmWO8MtxLJ8aqusdxt5dn3i2/YipWZ0fdxkVAwPU=
 github.com/Davincible/goinsta/v3 v3.2.6 h1:+lNIWU6NABWd2VSGe83UQypnef+kzWwjmfgGihPbwD8=
 github.com/Davincible/goinsta/v3 v3.2.6/go.mod h1:jIDhrWZmttL/gtXj/mkCaZyeNdAAqW3UYjasOUW0YEw=
 github.com/aws/aws-lambda-go v1.41.0 h1:l/5fyVb6Ud9uYd411xdHZzSf2n86TakxzpvIoz7l+3Y=
