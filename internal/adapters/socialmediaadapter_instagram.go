@@ -77,8 +77,8 @@ func (i *instagramAdapter) GetName() string {
 }
 
 func createInstagramCaption(prompt string, imageGeneratorName string, newsArticle domain.NewsArticle) string {
-	return fmt.Sprintf("AI Generated Content, from the %s \n\nArticle Title: %s\n\n"+
-		"Created by %s with the prompt:\n\n%s", newsArticle.Source, newsArticle.Title, imageGeneratorName, prompt)
+	return fmt.Sprintf("%s \n\nCreated by %s with the prompt:\n\n%s\n\nGenerated from the %s article at: %s",
+		newsArticle.Title, imageGeneratorName, prompt, newsArticle.Source, newsArticle.Url)
 }
 
 func NewInstagramAdapterFromEnv(logger logger.Logger) (ports.SocialMediaAdapter, error) {
