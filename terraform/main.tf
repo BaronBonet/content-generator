@@ -27,7 +27,7 @@ module "lambda_function_existing_package_s3" {
 
   attach_cloudwatch_logs_policy     = true
   cloudwatch_logs_retention_in_days = 7
-  maximum_retry_attempts = 0
+  maximum_retry_attempts            = 0
 
   environment_variables = {
     NEW_YORK_TIMES_KEY          = var.env_vars.new_york_times_key

@@ -5,16 +5,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/BaronBonet/content-generator/internal/core/ports"
-	"io/ioutil"
+	"io"
 	"net/http"
+
+	"github.com/BaronBonet/content-generator/internal/core/ports"
 )
 
 const chatGPTAPIURL = "https://api.openai.com/v1/chat/completions"
 
 type chatGPTAdapter struct {
-	apiKey string
 	client httpClient
+	apiKey string
 }
 
 func NewChatGPTAdapter(apiKey string, httpClient httpClient) ports.LLMAdapter {
@@ -27,7 +28,7 @@ func NewChatGPTAdapter(apiKey string, httpClient httpClient) ports.LLMAdapter {
 func (c *chatGPTAdapter) Chat(ctx context.Context, prompt string) (string, error) {
 
 	requestBody := map[string]interface{}{
-		"model":       "gpt-3.5-turbo",
+		"model":       "gpt-4o",
 		"temperature": 0.9,
 		"messages": []map[string]string{
 			{
@@ -58,7 +59,7 @@ func (c *chatGPTAdapter) Chat(ctx context.Context, prompt string) (string, error
 		return "", fmt.Errorf("failed to generate image prompt, status code: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %w", err)
 	}
