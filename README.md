@@ -7,4 +7,3 @@ A silly project for showcasing [hexagonal architecture](https://ericcbonet.com/p
 ## How it works
 
 ![the pipeline](docs/pipeline.svg)
-

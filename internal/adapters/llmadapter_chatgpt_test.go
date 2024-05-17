@@ -3,11 +3,12 @@ package adapters
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/mock"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func TestChatGPTAdapter_CreateImagePrompt(t *testing.T) {
@@ -52,7 +53,7 @@ func TestChatGPTAdapter_CreateImagePrompt(t *testing.T) {
 			mockClient := newMockHttpClient(t)
 			mockClient.On("Do", mock.Anything).Return(&http.Response{
 				StatusCode: tc.responseCode,
-				Body:       ioutil.NopCloser(strings.NewReader(tc.responseBody)),
+				Body:       io.NopCloser(strings.NewReader(tc.responseBody)),
 			}, nil)
 
 			adapter := NewChatGPTAdapter("test-api-key", mockClient)
